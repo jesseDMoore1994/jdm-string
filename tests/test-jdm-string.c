@@ -215,7 +215,6 @@ static b8 jdm_string_validation_checks(void) {
     return JDM_FALSE;
   if (jdm_string_is_alphanum(ctx.str))
     return JDM_FALSE;
-  JDM_LOG_DEBUG("%s", jdm_string_get_c_str(ctx.str));
   jdm_string_t* substr = jdm_string_create(ctx.alloc, "ab");
   if (!jdm_string_starts_with(ctx.str, substr))
     return JDM_FALSE;

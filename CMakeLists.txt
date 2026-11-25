@@ -6,7 +6,7 @@ project(jdm-string VERSION 1.0 LANGUAGES C)
 # Set the C standard to C11
 set(CMAKE_C_STANDARD 11)
 
-set(CMAKE_REQUIRED_LIBRARIES jdm-alloc jdm-log)
+set(CMAKE_REQUIRED_LIBRARIES jdm-alloc jdm-array jdm-log)
 
 option(ENABLE_ASAN "Enable Address Sanitizer" OFF)
 
@@ -48,8 +48,8 @@ add_library(jdm-string STATIC ${SOURCES})
 # Include the header files for the jdm-string library
 target_include_directories(jdm-string PUBLIC include)
 
-# Link the jdm-log and jdm-alloc to the jdm-string library
-target_link_libraries(jdm-string PRIVATE jdm-alloc jdm-log)
+# Link the jdm-log, jdm-array and jdm-alloc to the jdm-string library
+target_link_libraries(jdm-string PRIVATE jdm-alloc jdm-array jdm-log)
 
 # Add the test executables
 add_executable(test-jdm-string tests/test-jdm-string.c)

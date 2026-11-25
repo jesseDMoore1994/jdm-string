@@ -2,6 +2,7 @@
 #define JDM_STRING_H
 
 #include <jdm-alloc.h>
+#include <jdm-array.h>
 #include <jdm-defs.h>
 
 typedef enum {
@@ -11,6 +12,7 @@ typedef enum {
   JDM_STRING_ERR_NOT_FOUND,
   JDM_STRING_ERR_OUT_OF_RANGE,
   JDM_STRING_ERR_OVERFLOW,
+  JDM_STRING_ERR_ARRAY,
 } jdm_string_status_t;
 
 typedef struct jdm_string_t jdm_string_t;
