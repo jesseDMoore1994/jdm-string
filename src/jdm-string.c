@@ -14,8 +14,8 @@ struct jdm_string_t {
 static jdm_string_status_t grow_string(jdm_string_t **str, sz additional) {
   jdm_alloc_t *alloc = (*str)->alloc;
 
-  if((*str)->length == 0) {
-    additional++; //add one for null terminator
+  if ((*str)->length == 0) {
+    additional++; // add one for null terminator
   }
 
   sz new_capacity = sizeof(jdm_string_t) + (*str)->capacity + additional;
@@ -30,7 +30,7 @@ static jdm_string_status_t grow_string(jdm_string_t **str, sz additional) {
   }
 }
 
-static jdm_string_status_t shrink_string(jdm_string_t **str, sz* reclaimed) {
+static jdm_string_status_t shrink_string(jdm_string_t **str, sz *reclaimed) {
   jdm_alloc_t *alloc = (*str)->alloc;
   sz new_capacity = sizeof(jdm_string_t) + (*str)->length + 1;
   sz reclaim = (*str)->capacity - ((*str)->length + 1);
@@ -94,10 +94,10 @@ void jdm_string_empty(jdm_string_t *str) {
 }
 
 void jdm_string_reverse(jdm_string_t *str) {
-  for(sz i = 0, j = (str->length - 1); i < j; i++, j--) {
+  for (sz i = 0, j = (str->length - 1); i < j; i++, j--) {
     char tmp = str->c_str[i];
-    str->c_str[i] = str->c_str[j]; 
-    str->c_str[j] = tmp; 
+    str->c_str[i] = str->c_str[j];
+    str->c_str[j] = tmp;
   }
 }
 
@@ -109,7 +109,7 @@ s8 jdm_string_compare(const jdm_string_t *str1, const jdm_string_t *str2) {
 
 jdm_string_status_t jdm_string_trim_capacity(jdm_string_t **str, sz *out) {
   jdm_string_status_t s;
-  jdm_string_t* sobj = *str;
+  jdm_string_t *sobj = *str;
   if (sobj->length < (sobj->capacity - 1)) {
     return shrink_string(str, out);
   }
@@ -179,67 +179,56 @@ jdm_string_status_t jdm_string_insert_at(jdm_string_t **str, sz idx,
   return jdm_string_insert_c_str_at(str, idx, insert->c_str);
 }
 
-jdm_string_status_t jdm_string_replace_c_str_at(
-    jdm_string_t **str,
-    sz idx,
-    sz len_to_replace,
-    const char *replace)
-{
-    jdm_string_status_t s;
-    jdm_string_t *sobj = *str;
+jdm_string_status_t jdm_string_replace_c_str_at(jdm_string_t **str, sz idx,
+                                                sz len_to_replace,
+                                                const char *replace) {
+  jdm_string_status_t s;
+  jdm_string_t *sobj = *str;
 
-    sz replace_len = strlen(replace);
+  sz replace_len = strlen(replace);
 
-    if (idx > sobj->length ||
-        len_to_replace > sobj->length - idx) {
-        return JDM_STRING_ERR_OUT_OF_RANGE;
+  if (idx > sobj->length || len_to_replace > sobj->length - idx) {
+    return JDM_STRING_ERR_OUT_OF_RANGE;
+  }
+
+  sz new_length;
+
+  if (replace_len >= len_to_replace) {
+    sz growth = replace_len - len_to_replace;
+
+    if (sobj->length > SIZE_MAX - growth) {
+      return JDM_STRING_ERR_OVERFLOW;
     }
 
-    sz new_length;
+    new_length = sobj->length + growth;
 
-    if (replace_len >= len_to_replace) {
-        sz growth = replace_len - len_to_replace;
-
-        if (sobj->length > SIZE_MAX - growth) {
-            return JDM_STRING_ERR_OVERFLOW;
-        }
-
-        new_length = sobj->length + growth;
-
-        if (new_length >= sobj->capacity) {
-            if ((s = grow_string(str, growth)) != JDM_STRING_OK) {
-                return s;
-            }
-            sobj = *str;
-        }
-    } else {
-        new_length = sobj->length - (len_to_replace - replace_len);
+    if (new_length >= sobj->capacity) {
+      if ((s = grow_string(str, growth)) != JDM_STRING_OK) {
+        return s;
+      }
+      sobj = *str;
     }
+  } else {
+    new_length = sobj->length - (len_to_replace - replace_len);
+  }
 
-    sz after_replace_idx = idx + len_to_replace;
-    sz len_after_replace = sobj->length - after_replace_idx;
+  sz after_replace_idx = idx + len_to_replace;
+  sz len_after_replace = sobj->length - after_replace_idx;
 
-    JDM_MOVE_MEMORY(
-        sobj->c_str + idx + replace_len,
-        sobj->c_str + after_replace_idx,
-        len_after_replace);
+  JDM_MOVE_MEMORY(sobj->c_str + idx + replace_len,
+                  sobj->c_str + after_replace_idx, len_after_replace);
 
-    JDM_COPY_MEMORY(
-        sobj->c_str + idx,
-        replace,
-        replace_len);
+  JDM_COPY_MEMORY(sobj->c_str + idx, replace, replace_len);
 
-    if (new_length < sobj->length) {
-        sz removed = sobj->length - new_length;
+  if (new_length < sobj->length) {
+    sz removed = sobj->length - new_length;
 
-        JDM_ZERO_MEMORY(
-            sobj->c_str + new_length,
-            removed);
-    }
+    JDM_ZERO_MEMORY(sobj->c_str + new_length, removed);
+  }
 
-    sobj->length = new_length;
+  sobj->length = new_length;
 
-    return JDM_STRING_OK;
+  return JDM_STRING_OK;
 }
 
 jdm_string_status_t jdm_string_replace_at(jdm_string_t **str, sz idx,
@@ -404,9 +393,6 @@ jdm_string_status_t jdm_string_replace_all(jdm_string_t **str,
   return jdm_string_replace_all_c_str(str, substr->c_str, replace->c_str);
 }
 
-
-
-
 jdm_string_status_t jdm_string_remove_first_c_str(jdm_string_t **str,
                                                   const char *c_substr) {
   return jdm_string_replace_first_c_str(str, c_substr, "");
@@ -426,7 +412,6 @@ jdm_string_status_t jdm_string_remove_all(jdm_string_t **str,
                                           const jdm_string_t *substr) {
   return jdm_string_replace_all_c_str(str, substr->c_str, "");
 }
-
 
 b8 jdm_string_is_digit(const jdm_string_t *str) {
   if (str->length == 0)
@@ -464,30 +449,38 @@ b8 jdm_string_is_alphanum(const jdm_string_t *str) {
   return JDM_TRUE;
 }
 
-b8 jdm_string_starts_with_c_str(const jdm_string_t *str, const char* c_substr) {
+b8 jdm_string_starts_with_c_str(const jdm_string_t *str, const char *c_substr) {
   sz sublen = strlen(c_substr);
-  if(sublen > str->length) {return JDM_FALSE;}
-  for(sz i = 0; i < sublen; i++) {
-    if(str->c_str[i] != c_substr[i]) {return JDM_FALSE;}
+  if (sublen > str->length) {
+    return JDM_FALSE;
+  }
+  for (sz i = 0; i < sublen; i++) {
+    if (str->c_str[i] != c_substr[i]) {
+      return JDM_FALSE;
+    }
   }
   return JDM_TRUE;
 }
 
-b8 jdm_string_starts_with(const jdm_string_t *str, const jdm_string_t* substr) {
+b8 jdm_string_starts_with(const jdm_string_t *str, const jdm_string_t *substr) {
   return jdm_string_starts_with_c_str(str, substr->c_str);
 }
 
-b8 jdm_string_ends_with_c_str(const jdm_string_t *str, const char* c_substr) {
+b8 jdm_string_ends_with_c_str(const jdm_string_t *str, const char *c_substr) {
   sz sublen = strlen(c_substr);
-  if(sublen > str->length) {return JDM_FALSE;}
+  if (sublen > str->length) {
+    return JDM_FALSE;
+  }
   sz back_idx = str->length - sublen;
-  for(sz i = 0; i < sublen; i++) {
-    if(str->c_str[back_idx+i] != c_substr[i]) {return JDM_FALSE;}
+  for (sz i = 0; i < sublen; i++) {
+    if (str->c_str[back_idx + i] != c_substr[i]) {
+      return JDM_FALSE;
+    }
   }
   return JDM_TRUE;
 }
 
-b8 jdm_string_ends_with(const jdm_string_t *str, const jdm_string_t* substr) {
+b8 jdm_string_ends_with(const jdm_string_t *str, const jdm_string_t *substr) {
   return jdm_string_ends_with_c_str(str, substr->c_str);
 }
 
@@ -563,40 +556,42 @@ void jdm_string_strip_right(jdm_string_t *str, const jdm_string_t *strip) {
     jdm_string_strip_right_c_str(str, JDM_NULL);
 }
 
-static void free_str_elem(u8* elem) {
-  jdm_string_destroy((jdm_string_t*)elem);
+static void free_str_elem(u8 *elem) {
+  jdm_string_destroy((jdm_string_t *)elem);
 }
 
-jdm_string_status_t jdm_string_split_c_str(const jdm_string_t* str,jdm_array_t** out, const char* split_on) {
-  jdm_alloc_t* alloc = str->alloc;
+jdm_string_status_t jdm_string_split_c_str(const jdm_string_t *str,
+                                           jdm_array_t **out,
+                                           const char *split_on) {
+  jdm_alloc_t *alloc = str->alloc;
   jdm_array_status_t as;
   jdm_string_status_t s;
   sz split_occurences;
   sz out_size;
-  jdm_string_t* elem; 
-  jdm_array_t* res;
+  jdm_string_t *elem;
+  jdm_array_t *res;
 
   split_occurences = jdm_string_count_occurences_c_str(str, split_on);
   out_size = split_occurences + 1;
-  res = jdm_array_create((jdm_array_config_t) {
-    .alloc = alloc,
-    .capacity = out_size,
-    .element_size = sizeof(jdm_string_t*),
-    .exp_factor = 2,
+  res = jdm_array_create((jdm_array_config_t){
+      .alloc = alloc,
+      .capacity = out_size,
+      .element_size = sizeof(jdm_string_t *),
+      .exp_factor = 2,
   });
   if (res == JDM_NULL) {
     return JDM_STRING_ERR_ARRAY;
   }
 
-  jdm_string_t* copy = JDM_NULL;
+  jdm_string_t *copy = JDM_NULL;
   s = jdm_string_copy(str, &copy);
-  char* token = strtok(copy->c_str, split_on);
+  char *token = strtok(copy->c_str, split_on);
   while (token) {
     elem = jdm_string_create(alloc, token);
     if (elem == JDM_NULL) {
       break;
     }
-    as = jdm_array_add(res, (u8*)&elem);
+    as = jdm_array_add(res, (u8 *)&elem);
     if (as != JDM_ARRAY_OK) {
       jdm_string_destroy(elem);
       break;
@@ -605,7 +600,7 @@ jdm_string_status_t jdm_string_split_c_str(const jdm_string_t* str,jdm_array_t**
   }
   jdm_string_destroy(copy);
 
-  if(elem == JDM_NULL || as != JDM_ARRAY_OK) {
+  if (elem == JDM_NULL || as != JDM_ARRAY_OK) {
     jdm_array_map(res, free_str_elem);
     jdm_array_destroy(res);
     res = JDM_NULL;
@@ -616,19 +611,22 @@ jdm_string_status_t jdm_string_split_c_str(const jdm_string_t* str,jdm_array_t**
   return JDM_STRING_OK;
 }
 
-jdm_string_status_t jdm_string_split(const jdm_string_t* str, jdm_array_t **out, const jdm_string_t* split_on) {
+jdm_string_status_t jdm_string_split(const jdm_string_t *str, jdm_array_t **out,
+                                     const jdm_string_t *split_on) {
   return jdm_string_split_c_str(str, out, split_on->c_str);
 }
 
-jdm_string_status_t jdm_string_join_c_str(jdm_string_t** str, const jdm_array_t *in, const char* join_on) {
-  if((*str)->length > 0) {
+jdm_string_status_t jdm_string_join_c_str(jdm_string_t **str,
+                                          const jdm_array_t *in,
+                                          const char *join_on) {
+  if ((*str)->length > 0) {
     jdm_string_empty(*str);
   }
 
   sz in_size = jdm_array_size(in);
-  jdm_string_t **s = jdm_alloc((*str)->alloc, sizeof(jdm_string_t*));
-  for(sz i = 0; i < (in_size - 1); i++) {
-    jdm_array_get_at(in, (u8**)&s, i);
+  jdm_string_t **s = jdm_alloc((*str)->alloc, sizeof(jdm_string_t *));
+  for (sz i = 0; i < (in_size - 1); i++) {
+    jdm_array_get_at(in, (u8 **)&s, i);
     jdm_string_append(str, *s);
     jdm_string_append_c_str(str, join_on);
   }
@@ -638,6 +636,7 @@ jdm_string_status_t jdm_string_join_c_str(jdm_string_t** str, const jdm_array_t 
   return JDM_STRING_OK;
 }
 
-jdm_string_status_t jdm_string_join(jdm_string_t** str, const jdm_array_t *in, const jdm_string_t* join_on){
+jdm_string_status_t jdm_string_join(jdm_string_t **str, const jdm_array_t *in,
+                                    const jdm_string_t *join_on) {
   return jdm_string_join_c_str(str, in, join_on->c_str);
 }

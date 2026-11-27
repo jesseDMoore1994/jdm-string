@@ -83,14 +83,14 @@ jdm_string_status_t jdm_string_remove_first(jdm_string_t **str,
 jdm_string_status_t jdm_string_remove_all_c_str(jdm_string_t **str,
                                                 const char *c_substr);
 jdm_string_status_t jdm_string_remove_all(jdm_string_t **str,
-                                           const jdm_string_t *substr);
+                                          const jdm_string_t *substr);
 b8 jdm_string_is_digit(const jdm_string_t *str);
 b8 jdm_string_is_alpha(const jdm_string_t *str);
 b8 jdm_string_is_alphanum(const jdm_string_t *str);
-b8 jdm_string_starts_with_c_str(const jdm_string_t *str, const char* c_substr);
-b8 jdm_string_starts_with(const jdm_string_t *str, const jdm_string_t* substr);
-b8 jdm_string_ends_with_c_str(const jdm_string_t *str, const char* c_substr);
-b8 jdm_string_ends_with(const jdm_string_t *str, const jdm_string_t* substr);
+b8 jdm_string_starts_with_c_str(const jdm_string_t *str, const char *c_substr);
+b8 jdm_string_starts_with(const jdm_string_t *str, const jdm_string_t *substr);
+b8 jdm_string_ends_with_c_str(const jdm_string_t *str, const char *c_substr);
+b8 jdm_string_ends_with(const jdm_string_t *str, const jdm_string_t *substr);
 void jdm_string_to_upper(jdm_string_t *str);
 void jdm_string_to_lower(jdm_string_t *str);
 void jdm_string_trim_left(jdm_string_t *str, sz n);
@@ -99,9 +99,15 @@ void jdm_string_strip_left_c_str(jdm_string_t *str, const char *strip);
 void jdm_string_strip_left(jdm_string_t *str, const jdm_string_t *strip);
 void jdm_string_strip_right_c_str(jdm_string_t *str, const char *strip);
 void jdm_string_strip_right(jdm_string_t *str, const jdm_string_t *strip);
-jdm_string_status_t jdm_string_split_c_str(const jdm_string_t* str, jdm_array_t **out, const char* split_on);
-jdm_string_status_t jdm_string_split(const jdm_string_t* str, jdm_array_t **out, const jdm_string_t* split_on);
-jdm_string_status_t jdm_string_join_c_str(jdm_string_t** str, const jdm_array_t *in, const char* join_on);
-jdm_string_status_t jdm_string_join(jdm_string_t** str, const jdm_array_t *in, const jdm_string_t* join_on);
+jdm_string_status_t jdm_string_split_c_str(const jdm_string_t *str,
+                                           jdm_array_t **out,
+                                           const char *split_on);
+jdm_string_status_t jdm_string_split(const jdm_string_t *str, jdm_array_t **out,
+                                     const jdm_string_t *split_on);
+jdm_string_status_t jdm_string_join_c_str(jdm_string_t **str,
+                                          const jdm_array_t *in,
+                                          const char *join_on);
+jdm_string_status_t jdm_string_join(jdm_string_t **str, const jdm_array_t *in,
+                                    const jdm_string_t *join_on);
 
 #endif // JDM_STRING_H
