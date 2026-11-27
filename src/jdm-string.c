@@ -13,8 +13,12 @@ struct jdm_string_t {
 
 static jdm_string_status_t grow_string(jdm_string_t **str, sz additional) {
   jdm_alloc_t *alloc = (*str)->alloc;
-  sz new_capacity = sizeof(jdm_string_t) + (*str)->capacity + additional;
 
+  if((*str)->length == 0) {
+    additional++; //add one for null terminator
+  }
+
+  sz new_capacity = sizeof(jdm_string_t) + (*str)->capacity + additional;
   jdm_string_t *tmp = jdm_realloc(alloc, *str, new_capacity);
   if (tmp == JDM_NULL) {
     return JDM_STRING_ERR_ALLOC;
@@ -557,4 +561,83 @@ void jdm_string_strip_right(jdm_string_t *str, const jdm_string_t *strip) {
     jdm_string_strip_right_c_str(str, strip->c_str);
   else
     jdm_string_strip_right_c_str(str, JDM_NULL);
+}
+
+static void free_str_elem(u8* elem) {
+  jdm_string_destroy((jdm_string_t*)elem);
+}
+
+jdm_string_status_t jdm_string_split_c_str(const jdm_string_t* str,jdm_array_t** out, const char* split_on) {
+  jdm_alloc_t* alloc = str->alloc;
+  jdm_array_status_t as;
+  jdm_string_status_t s;
+  sz split_occurences;
+  sz out_size;
+  jdm_string_t* elem; 
+  jdm_array_t* res;
+
+  split_occurences = jdm_string_count_occurences_c_str(str, split_on);
+  out_size = split_occurences + 1;
+  res = jdm_array_create((jdm_array_config_t) {
+    .alloc = alloc,
+    .capacity = out_size,
+    .element_size = sizeof(jdm_string_t*),
+    .exp_factor = 2,
+  });
+  if (res == JDM_NULL) {
+    return JDM_STRING_ERR_ARRAY;
+  }
+
+  jdm_string_t* copy = JDM_NULL;
+  s = jdm_string_copy(str, &copy);
+  char* token = strtok(copy->c_str, split_on);
+  while (token) {
+    elem = jdm_string_create(alloc, token);
+    if (elem == JDM_NULL) {
+      break;
+    }
+    as = jdm_array_add(res, (u8*)&elem);
+    if (as != JDM_ARRAY_OK) {
+      jdm_string_destroy(elem);
+      break;
+    }
+    token = strtok(JDM_NULL, split_on);
+  }
+  jdm_string_destroy(copy);
+
+  if(elem == JDM_NULL || as != JDM_ARRAY_OK) {
+    jdm_array_map(res, free_str_elem);
+    jdm_array_destroy(res);
+    res = JDM_NULL;
+    return JDM_STRING_ERR_ARRAY;
+  }
+
+  *out = res;
+  return JDM_STRING_OK;
+}
+
+jdm_string_status_t jdm_string_split(const jdm_string_t* str, jdm_array_t **out, const jdm_string_t* split_on) {
+  return jdm_string_split_c_str(str, out, split_on->c_str);
+}
+
+jdm_string_status_t jdm_string_join_c_str(jdm_string_t** str, const jdm_array_t *in, const char* join_on) {
+  if((*str)->length > 0) {
+    jdm_string_empty(*str);
+  }
+
+  sz in_size = jdm_array_size(in);
+  jdm_string_t **s = jdm_alloc((*str)->alloc, sizeof(jdm_string_t*));
+  for(sz i = 0; i < (in_size - 1); i++) {
+    jdm_array_get_at(in, (u8**)&s, i);
+    jdm_string_append(str, *s);
+    jdm_string_append_c_str(str, join_on);
+  }
+  jdm_string_append(str, *s);
+
+  jdm_free((*str)->alloc, s);
+  return JDM_STRING_OK;
+}
+
+jdm_string_status_t jdm_string_join(jdm_string_t** str, const jdm_array_t *in, const jdm_string_t* join_on){
+  return jdm_string_join_c_str(str, in, join_on->c_str);
 }

@@ -48,11 +48,11 @@
         "nixpkgs": "nixpkgs_9"
       },
       "locked": {
-        "lastModified": 1795378159,
-        "narHash": "sha256-3fVMI1Zgfosk+bsjBPmi9nQuoBwmfasva4hz1SphtCE=",
+        "lastModified": 1795733567,
+        "narHash": "sha256-scLhEs5O2ABbBNj5BLiErKzcHkBobV3CeztoTmEmjbI=",
         "owner": "jesseDMoore1994",
         "repo": "jdm-array",
-        "rev": "bf2f207308e856afed4cfa0217a50471db26c007",
+        "rev": "4a74967e37c6a055c3a70c82ff972c980a047f8c",
         "type": "github"
       },
       "original": {

@@ -99,5 +99,9 @@ void jdm_string_strip_left_c_str(jdm_string_t *str, const char *strip);
 void jdm_string_strip_left(jdm_string_t *str, const jdm_string_t *strip);
 void jdm_string_strip_right_c_str(jdm_string_t *str, const char *strip);
 void jdm_string_strip_right(jdm_string_t *str, const jdm_string_t *strip);
+jdm_string_status_t jdm_string_split_c_str(const jdm_string_t* str, jdm_array_t **out, const char* split_on);
+jdm_string_status_t jdm_string_split(const jdm_string_t* str, jdm_array_t **out, const jdm_string_t* split_on);
+jdm_string_status_t jdm_string_join_c_str(jdm_string_t** str, const jdm_array_t *in, const char* join_on);
+jdm_string_status_t jdm_string_join(jdm_string_t** str, const jdm_array_t *in, const jdm_string_t* join_on);
 
 #endif // JDM_STRING_H

@@ -1,6 +1,7 @@
 #include "jdm-string.h"
 #include <jdm-alloc.h>
 #include <jdm-log.h>
+#include <assert.h>
 #include <string.h>
 
 typedef struct {
@@ -302,6 +303,71 @@ static b8 jdm_string_replace_ops(void) {
   return JDM_TRUE;
 }
 
+static b8 jdm_string_split_join_ops(void) {
+  test_ctx ctx = get_test_ctx("000-000-000");
+  jdm_string_status_t s;
+  jdm_array_t* split_res = JDM_NULL;
+  sz arr_size;
+
+  jdm_string_t* split_on = jdm_string_create(ctx.alloc, "-");
+  s = jdm_string_split(ctx.str, &split_res, split_on);
+  if(s != JDM_STRING_OK) {
+    JDM_LOG_ERROR("String split failed.");
+    return JDM_FALSE;
+  }
+  jdm_free(ctx.alloc, split_on);
+
+  arr_size = jdm_array_size(split_res); 
+  if(arr_size != 3) {
+    JDM_LOG_ERROR("Incorrect array size.");
+    return JDM_FALSE;
+  }
+
+  jdm_string_t** actual = jdm_alloc(ctx.alloc, sizeof(jdm_string_t*));
+  for(sz i = 0; i < arr_size; i++) {
+    jdm_string_t* expected = jdm_string_create(ctx.alloc, "000");
+    jdm_array_get_at(split_res, (u8**)&actual, i);
+    if(jdm_string_compare(*actual, expected) != 0) {
+      JDM_LOG_ERROR("Split element not expected.");
+      JDM_LOG_ERROR("Expected: %s", jdm_string_get_c_str(expected));
+      JDM_LOG_ERROR("actual (%p): %s", *actual, jdm_string_get_c_str(*actual));
+      jdm_string_destroy(*actual);
+      return JDM_FALSE;
+    }
+    jdm_string_destroy(expected);
+  }
+
+  jdm_string_t* join_with = jdm_string_create(ctx.alloc, "~");
+  jdm_string_t* joined_str = jdm_string_create_empty(ctx.alloc);
+  jdm_string_t* expected = jdm_string_create(ctx.alloc, "000~000~000");
+  s = jdm_string_join(&joined_str, split_res, join_with);
+  if(s != JDM_STRING_OK) {
+    JDM_LOG_ERROR("String split join.");
+    return JDM_FALSE;
+  }
+
+  if(0 != jdm_string_compare(joined_str, expected)) {
+    JDM_LOG_ERROR("joined string does not meet expected.");
+    JDM_LOG_ERROR("joined_str: %s", jdm_string_get_c_str(joined_str));
+    JDM_LOG_ERROR("expected: %s", jdm_string_get_c_str(expected));
+    JDM_LOG_ERROR("joined string does not meet expected.");
+    return JDM_FALSE;
+  }
+  jdm_string_destroy(join_with);
+  jdm_string_destroy(joined_str);
+  jdm_string_destroy(expected);
+
+  for(sz i = 0; i < arr_size; i++) {
+    jdm_array_get_at(split_res, (u8**)&actual, i);
+    jdm_string_destroy(*actual); 
+  }
+  jdm_free(ctx.alloc, actual);
+
+  jdm_array_destroy(split_res);
+  destroy_test_ctx(ctx);
+  return JDM_TRUE;
+}
+
 int main() {
   jdm_log_init();
   if (jdm_string_create_empty_destroy() != JDM_TRUE) {
@@ -358,6 +424,10 @@ int main() {
   }
   if (jdm_string_replace_ops() != JDM_TRUE) {
     JDM_LOG_ERROR("Failure in jdm_string_replace_ops()");
+    return 1;
+  }
+  if (jdm_string_split_join_ops() != JDM_TRUE) {
+    JDM_LOG_ERROR("Failure in jdm_string_split_join_ops()");
     return 1;
   }
   jdm_log_cleanup();
